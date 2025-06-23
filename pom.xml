@@ -209,7 +209,10 @@
               <sourceDirectories>${basedir}</sourceDirectories>
               <includes>**/*</includes>
               <excludes>
-                **/.git/**/*,**/.idea/**/*,**/target/**/,**/.flattened-pom.xml,**/*.class</excludes>
+                **/.git/**/*,**/.idea/**/*,**/target/**/,**/.flattened-pom.xml,**/*.class
+              </excludes>
+              <outputFileFormat>xml</outputFileFormat>
+              <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>
             </configuration>
             <goals>
               <goal>check</goal>
