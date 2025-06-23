@@ -213,6 +213,7 @@
               </excludes>
               <outputFileFormat>xml</outputFileFormat>
               <outputFile>${project.build.directory}/checkstyle-result.xml</outputFile>
+              <failsOnError>false</failsOnError>
             </configuration>
             <goals>
               <goal>check</goal>

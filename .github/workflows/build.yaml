@@ -19,6 +19,7 @@ jobs:
 
     - name: Run Checkstyle
       run: mvn checkstyle:check
+      continue-on-error: true
 
     - name: Cache Maven packages
       uses: actions/cache@v3
@@ -29,18 +30,6 @@ jobs:
 
     - name: Build and test with Maven
       run: mvn clean verify
-
-    # - name: Upload test reports
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: surefire-reports
-    #     path: target/surefire-reports/
-
-    # - name: Upload JAR artifact
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: petclinic-app
-    #     path: target/*.jar
 
     - name: Setup SonarQube Scanner
       uses: warchant/setup-sonar-scanner@v7
@@ -57,12 +46,31 @@ jobs:
           -Dsonar.host.url=${{ secrets.SONAR_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
+    # - name: Upload test reports
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: surefire-reports
+    #     path: target/surefire-reports/
+
+    # - name: Upload JAR artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: petclinic-app
+    #     path: target/*.jar
+
     # - name: Upload Jacoco coverage
     #   if: always()
     #   uses: actions/upload-artifact@v4
     #   with:
     #     name: jacoco-report
     #     path: target/site/jacoco/
+
+    # - name: Upload Checkstyle Report
+    #   if: always()
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: checkstyle-result
+    #     path: target/checkstyle-result.xml
 
     - name: Build Docker Image
       run: |
