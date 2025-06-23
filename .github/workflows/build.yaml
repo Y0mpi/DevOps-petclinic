@@ -42,7 +42,6 @@ jobs:
           -Dsonar.tests=src/test/java \
           -Dsonar.java.binaries=target \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
           -Dsonar.host.url=${{ secrets.SONAR_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
