@@ -46,15 +46,21 @@ jobs:
           -Dsonar.host.url=${{ secrets.SONAR_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
+    - name: Set Docker image tag
+      run: |
+        GIT_SHORTHASH=$(git rev-parse --short HEAD)
+        BUILD_TIMESTAMP=$(date +'%Y%m%d-%H%M')
+        DOCKER_IMAGE_TAG="${BUILD_TIMESTAMP}-${GIT_SHORTHASH}"
+        echo "GIT_SHORTHASH=$GIT_SHORTHASH" >> $GITHUB_ENV
+        echo "BUILD_TIMESTAMP=$BUILD_TIMESTAMP" >> $GITHUB_ENV
+        echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+        echo "Using Docker image tag: $DOCKER_IMAGE_TAG"
+
     - name: Build Docker Image
       run: |
-        echo "GIT_SHORTHASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-        echo "BUILD_TIMESTAMP=$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
-        DOCKER_IMAGE_TAG="${BUILD_TIMESTAMP}-${GIT_SHORTHASH}"
-        echo "Using Docker image tag: $DOCKER_IMAGE_TAG"
         docker build -t petclinic-app:${DOCKER_IMAGE_TAG} .
 
     - name: Save Docker image as artifact (optional)
       run: |
-        docker save petclinic-app | gzip > petclinic-app.tar.gz
+        docker save petclinic-app:${DOCKER_IMAGE_TAG} | gzip > petclinic-app.tar.gz
       continue-on-error: true
