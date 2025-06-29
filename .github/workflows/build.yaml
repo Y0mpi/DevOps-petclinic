@@ -46,43 +46,15 @@ jobs:
           -Dsonar.host.url=${{ secrets.SONAR_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
-    # - name: Upload test reports
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: surefire-reports
-    #     path: target/surefire-reports/
-
-    # - name: Upload JAR artifact
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: petclinic-app
-    #     path: target/*.jar
-
-    # - name: Upload Jacoco coverage
-    #   if: always()
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: jacoco-report
-    #     path: target/site/jacoco/
-
-    # - name: Upload Checkstyle Report
-    #   if: always()
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: checkstyle-result
-    #     path: target/checkstyle-result.xml
-
     - name: Build Docker Image
       run: |
-        docker build -t petclinic-app .
+        echo "GIT_SHORTHASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        echo "BUILD_TIMESTAMP=$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
+        DOCKER_IMAGE_TAG="${BUILD_TIMESTAMP}-${GIT_SHORTHASH}"
+        echo "Using Docker image tag: $DOCKER_IMAGE_TAG"
+        docker build -t petclinic-app:${DOCKER_IMAGE_TAG} .
 
     - name: Save Docker image as artifact (optional)
       run: |
         docker save petclinic-app | gzip > petclinic-app.tar.gz
       continue-on-error: true
-
-    - name: Upload Docker image (optional)
-      uses: actions/upload-artifact@v4
-      with:
-        name: petclinic-docker
-        path: petclinic-app.tar.gz
