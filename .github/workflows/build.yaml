@@ -68,7 +68,7 @@ jobs:
 
     - name: Push Docker Image to Registry
       run: |
-        docker tag petclinic-app:${DOCKER_IMAGE_TAG} ${REGISTRY_USERNAME}/petclinic-app:${DOCKER_IMAGE_TAG}
+        docker tag petclinic-app:${DOCKER_IMAGE_TAG} ${{ REGISTRY_USERNAME }}/petclinic-app:${DOCKER_IMAGE_TAG}
         docker push ${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${DOCKER_IMAGE_TAG}
 
     - name: Save image tag to summary
