@@ -28,7 +28,7 @@ jobs:
 
     - name: Run container
       run: |
-        docker run -d --name petclinic-app -p 8080:8080 docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ github.event.inputs.image_tag }}
+        docker run -d --name petclinic-app -p 8080:8080 docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ inputs.docker_image_tag }}
 
     - name: Wait for application to start
       run: |
