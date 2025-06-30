@@ -1,4 +1,4 @@
-name: Pull and run
+name: Pull and Run
 
 on:
   workflow_dispatch:
