@@ -71,3 +71,6 @@ jobs:
         docker tag petclinic-app:${DOCKER_IMAGE_TAG} ${REGISTRY_USERNAME}/petclinic-app:${DOCKER_IMAGE_TAG}
         docker push ${REGISTRY_USERNAME}/petclinic-app:${DOCKER_IMAGE_TAG}
 
+    - name: Save image tag to summary
+      run: |
+        echo "Docker image tag: \`${DOCKER_IMAGE_TAG}\`" >> $GITHUB_STEP_SUMMARY
