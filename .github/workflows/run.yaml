@@ -24,7 +24,7 @@ jobs:
 
     - name: Pull Docker image
       run: |
-        docker pull docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ github.event.inputs.image_tag }}
+        docker pull docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ inputs.docker_image_tag }}
 
     - name: Run container
       run: |
