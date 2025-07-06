@@ -17,16 +17,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Run Checkstyle
-      run: mvn checkstyle:check
-      continue-on-error: true
-
     - name: Cache Maven packages
       uses: actions/cache@v3
       with:
         path: ~/.m2
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-maven
+
+    - name: Run Checkstyle
+      run: mvn checkstyle:check
+      continue-on-error: true
 
     - name: Build and test with Maven
       run: mvn clean verify
@@ -48,6 +48,7 @@ jobs:
 
     - name: Set Docker image tag
       run: |
+        export TZ="Europe/Berlin"
         GIT_SHORTHASH=$(git rev-parse --short HEAD)
         BUILD_TIMESTAMP=$(date +'%Y%m%d-%H%M')
         DOCKER_IMAGE_TAG="${BUILD_TIMESTAMP}-${GIT_SHORTHASH}"
