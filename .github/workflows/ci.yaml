@@ -1,4 +1,4 @@
-name: Pull and Run
+name: CI Pipeline
 
 on:
   workflow_dispatch:
