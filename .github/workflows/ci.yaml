@@ -2,47 +2,76 @@ name: CI Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      docker_image_tag:
-        description: 'Docker image tag to pull'
-        required: true
-        default: 'latest'
 
 jobs:
-  run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-maven
+
+    - name: Run Checkstyle
+      run: mvn checkstyle:check
+      continue-on-error: true
+
+    - name: Build and test with Maven
+      run: mvn clean verify
+
+    - name: Setup SonarQube Scanner
+      uses: warchant/setup-sonar-scanner@v7
+
+    - name: Run SonarQube Analysis
+      run: |
+        sonar-scanner \
+          -Dsonar.projectKey=petclinic \
+          -Dsonar.sources=src/main/java \
+          -Dsonar.tests=src/test/java \
+          -Dsonar.java.binaries=target \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
+          -Dsonar.host.url=${{ secrets.SONAR_URL }} \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+    - name: Set Docker image tag
+      run: |
+        export TZ="Europe/Berlin"
+        GIT_SHORTHASH=$(git rev-parse --short HEAD)
+        BUILD_TIMESTAMP=$(date +'%Y%m%d-%H%M')
+        DOCKER_IMAGE_TAG="${BUILD_TIMESTAMP}-${GIT_SHORTHASH}"
+        echo "GIT_SHORTHASH=$GIT_SHORTHASH" >> $GITHUB_ENV
+        echo "BUILD_TIMESTAMP=$BUILD_TIMESTAMP" >> $GITHUB_ENV
+        echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+        echo "Using Docker image tag: $DOCKER_IMAGE_TAG"
+
+    - name: Build Docker Image
+      run: |
+        docker build -t petclinic-app:${DOCKER_IMAGE_TAG} .
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Pull Docker image
+    - name: Push Docker Image to Registry
       run: |
-        docker pull docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ inputs.docker_image_tag }}
+        docker tag petclinic-app:${DOCKER_IMAGE_TAG} ${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${DOCKER_IMAGE_TAG}
+        docker push ${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${DOCKER_IMAGE_TAG}
 
-    - name: Run container
+    - name: Save image tag to summary
       run: |
-        docker run -d --name petclinic-app -p 8080:8080 docker.io/${{ secrets.REGISTRY_USERNAME }}/petclinic-app:${{ inputs.docker_image_tag }}
-
-    - name: Wait for application to start
-      run: |
-        for i in {1..30}; do
-          if curl -s http://localhost:8080; then
-            echo "App is reachable!"
-            exit 0
-          else
-            echo "Waiting for app..."
-            sleep 5
-          fi
-        done
-        echo "App did not become ready in time." >&2
-        exit 1
-    
-    - name: Stop container
-      if: always()
-      run: |
-        docker stop petclinic-app 
-        docker rm petclinic-app 
+        echo "Docker image tag: \`${DOCKER_IMAGE_TAG}\`" >> $GITHUB_STEP_SUMMARY
